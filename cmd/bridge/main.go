@@ -17,18 +17,18 @@ import (
 	"github.com/coreos/pkg/capnslog"
 	"github.com/coreos/pkg/flagutil"
 
-	"github.com/openshift/console/pkg/auth"
-	"github.com/openshift/console/pkg/bridge"
-	"github.com/openshift/console/pkg/crypto"
-	"github.com/openshift/console/pkg/helm/chartproxy"
-	"github.com/openshift/console/pkg/knative"
-	"github.com/openshift/console/pkg/proxy"
-	"github.com/openshift/console/pkg/server"
-	"github.com/openshift/console/pkg/serverconfig"
+	"github.com/k8s-admission-webhooks/console/pkg/auth"
+	"github.com/k8s-admission-webhooks/console/pkg/bridge"
+	"github.com/k8s-admission-webhooks/console/pkg/crypto"
+	"github.com/k8s-admission-webhooks/console/pkg/helm/chartproxy"
+	"github.com/k8s-admission-webhooks/console/pkg/knative"
+	"github.com/k8s-admission-webhooks/console/pkg/proxy"
+	"github.com/k8s-admission-webhooks/console/pkg/server"
+	"github.com/k8s-admission-webhooks/console/pkg/serverconfig"
 )
 
 var (
-	log = capnslog.NewPackageLogger("github.com/openshift/console", "cmd/main")
+	log = capnslog.NewPackageLogger("github.com/k8s-admission-webhooks/console", "cmd/main")
 )
 
 const (
@@ -59,7 +59,7 @@ const (
 )
 
 func main() {
-	rl := capnslog.MustRepoLogger("github.com/openshift/console")
+	rl := capnslog.MustRepoLogger("github.com/k8s-admission-webhooks/console")
 	capnslog.SetFormatter(capnslog.NewStringFormatter(os.Stderr))
 
 	fs := flag.NewFlagSet("bridge", flag.ExitOnError)

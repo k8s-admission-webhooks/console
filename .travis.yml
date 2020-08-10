@@ -1,0 +1,9 @@
+dist: trusty
+jobs:
+  include:
+    - stage: build and push docker image
+      script:
+        - docker build -t mehbos/openshift-console-modified:4.7 -t mehbos/openshift-console-modified:latest .
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push mehbos/openshift-console-modified:4.7 
+        - docker push mehbos/openshift-console-modified:latest

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	plog = capnslog.NewPackageLogger("github.com/openshift/console", "bridge")
+	plog = capnslog.NewPackageLogger("github.com/k8s-admission-webhooks/console", "bridge")
 )
 
 func ValidateFlagNotEmpty(name string, value string) string {

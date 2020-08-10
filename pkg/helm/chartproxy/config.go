@@ -8,14 +8,14 @@ import (
 
 	"github.com/coreos/pkg/capnslog"
 
-	"github.com/openshift/console/pkg/bridge"
-	"github.com/openshift/console/pkg/crypto"
-	"github.com/openshift/console/pkg/proxy"
-	"github.com/openshift/console/pkg/server"
+	"github.com/k8s-admission-webhooks/console/pkg/bridge"
+	"github.com/k8s-admission-webhooks/console/pkg/crypto"
+	"github.com/k8s-admission-webhooks/console/pkg/proxy"
+	"github.com/k8s-admission-webhooks/console/pkg/server"
 )
 
 var (
-	log = capnslog.NewPackageLogger("github.com/openshift/console", "pkg/helm")
+	log = capnslog.NewPackageLogger("github.com/k8s-admission-webhooks/console", "pkg/helm")
 )
 
 type config struct {

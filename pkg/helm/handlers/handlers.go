@@ -16,13 +16,13 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/yaml"
 
-	"github.com/openshift/console/pkg/auth"
-	"github.com/openshift/console/pkg/helm/actions"
-	"github.com/openshift/console/pkg/serverutils"
+	"github.com/k8s-admission-webhooks/console/pkg/auth"
+	"github.com/k8s-admission-webhooks/console/pkg/helm/actions"
+	"github.com/k8s-admission-webhooks/console/pkg/serverutils"
 )
 
 var (
-	plog = capnslog.NewPackageLogger("github.com/openshift/console", "helm")
+	plog = capnslog.NewPackageLogger("github.com/k8s-admission-webhooks/console", "helm")
 )
 
 func New(apiUrl string, transport http.RoundTripper, defaultRepoCACert []byte) *helmHandlers {

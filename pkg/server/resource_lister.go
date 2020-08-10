@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/openshift/console/pkg/serverutils"
+	"github.com/k8s-admission-webhooks/console/pkg/serverutils"
 )
 
 // ResourceLister handles resource requests

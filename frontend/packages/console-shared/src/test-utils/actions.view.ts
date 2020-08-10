@@ -64,7 +64,7 @@ export const detailViewAction = async (action, confirm?) => {
 /**
  * Returns available options from Action.
  * Temporary method that should be superseded by more general getDropdownOptions method in utils.ts
- * once https://github.com/openshift/console/issues/1492 is resolved
+ * once https://github.com/k8s-admission-webhooks/console/issues/1492 is resolved
  */
 export async function getDetailActionDropdownOptions(): Promise<string[]> {
   const getActionsDropdown = () => $$(detailViewDropdown).first();

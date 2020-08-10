@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/coreos/pkg/capnslog"
-	"github.com/openshift/console/pkg/serverutils"
+	"github.com/k8s-admission-webhooks/console/pkg/serverutils"
 )
 
 var (
-	plog = capnslog.NewPackageLogger("github.com/openshift/console", "knative")
+	plog = capnslog.NewPackageLogger("github.com/k8s-admission-webhooks/console", "knative")
 )
 
 // EventSourceFilter shall filter partial metadata from knative event sources CRDs before propagating

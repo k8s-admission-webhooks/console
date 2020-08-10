@@ -1,4 +1,4 @@
-module github.com/openshift/console
+module github.com/k8s-admission-webhooks/console
 
 go 1.13
 

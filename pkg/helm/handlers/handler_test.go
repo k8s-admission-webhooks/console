@@ -19,8 +19,8 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/yaml"
 
-	"github.com/openshift/console/pkg/auth"
-	"github.com/openshift/console/pkg/helm/actions"
+	"github.com/k8s-admission-webhooks/console/pkg/auth"
+	"github.com/k8s-admission-webhooks/console/pkg/helm/actions"
 )
 
 var fakeReleaseList = []*release.Release{

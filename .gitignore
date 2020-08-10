@@ -5,7 +5,7 @@
 .DS_Store
 /bin
 /gopath
-/Godeps/_workspace/src/github.com/openshift/console
+/Godeps/_workspace/src/github.com/k8s-admission-webhooks/console
 /frontend/.cache-loader
 /frontend/.webpack-cycles
 /frontend/__coverage__
@@ -17,3 +17,4 @@
 /frontend/yarn-error.log
 /frontend/gui_test_screenshots
 /frontend/@types
+Dockerfile2

@@ -40,7 +40,7 @@ fi
 
 # split TEST into an array and prepend repo path to each local package
 read -ra split <<<"$TEST"
-TEST=("${split[@]/#/github.com/openshift/console/}")
+TEST=("${split[@]/#/github.com/k8s-admission-webhooks/console/}")
 
 echo "Running tests..."
 go test "${COVER}" "$@" "${TEST[@]}"

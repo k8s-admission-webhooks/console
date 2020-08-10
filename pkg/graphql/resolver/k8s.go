@@ -10,7 +10,7 @@ import (
 
 	auth "k8s.io/api/authorization/v1"
 
-	"github.com/openshift/console/pkg/proxy"
+	"github.com/k8s-admission-webhooks/console/pkg/proxy"
 )
 
 type K8sResolver struct {

@@ -1,7 +1,7 @@
 FROM openshift/origin-release:nodejs8
 
-COPY . /go/src/github.com/openshift/console/
-WORKDIR /go/src/github.com/openshift/console/
+COPY . /go/src/github.com/k8s-admission-webhooks/console/
+WORKDIR /go/src/github.com/k8s-admission-webhooks/console/
 
 RUN ./build-frontend.sh \
 &&  rm -rf /tmp/*

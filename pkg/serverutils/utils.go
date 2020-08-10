@@ -2,12 +2,13 @@ package serverutils
 
 import (
 	"encoding/json"
-	"github.com/coreos/pkg/capnslog"
 	"net/http"
+
+	"github.com/coreos/pkg/capnslog"
 )
 
 var (
-	plog = capnslog.NewPackageLogger("github.com/openshift/console", "serverutils")
+	plog = capnslog.NewPackageLogger("github.com/k8s-admission-webhooks/console", "serverutils")
 )
 
 // Copied from Server package to maintain error response consistency
