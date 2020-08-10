@@ -5,9 +5,8 @@ ADD . /go/src/github.com/k8s-admission-webhooks/console/
 WORKDIR /go/src/github.com/k8s-admission-webhooks/console/
 
 RUN ./build-backend.sh && \
-    pushd frontend && \
+    cd ./frontend && \
     yarn install && \
-    yarn run dev && \
-    popd
+    yarn run dev
 
 CMD [ "/go/src/github.com/k8s-admission-webhooks/console/bin/bridge", "--public-dir=/go/src/github.com/k8s-admission-webhooks/console/frontend/public/dist" ]
