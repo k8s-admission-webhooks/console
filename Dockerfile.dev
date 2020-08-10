@@ -1,0 +1,13 @@
+FROM quay.io/coreos/tectonic-console-builder:v20 AS build
+
+RUN mkdir -p /go/src/github.com/k8s-admission-webhooks/console/
+ADD . /go/src/github.com/k8s-admission-webhooks/console/
+WORKDIR /go/src/github.com/k8s-admission-webhooks/console/
+
+RUN ./build-backend.sh && \
+    pushd frontend && \
+    yarn install && \
+    yarn run dev && \
+    popd
+
+CMD [ "/go/src/github.com/k8s-admission-webhooks/console/bin/bridge", "--public-dir=/go/src/github.com/k8s-admission-webhooks/console/frontend/public/dist" ]
