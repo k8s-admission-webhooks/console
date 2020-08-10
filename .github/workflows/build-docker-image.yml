@@ -11,4 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag openshift-console-modified:4.7
+      env:
+        docker_uid: ${{ DOCKER_USERNAME }}
+        docker_pwd: ${{ DOCKER_PASSWORD }}
+      run: |
+        docker login -u "$docker_uid" -p "$docker_pwd" && \
+        docker build . --file Dockerfile --tag mehbos/openshift-console-modified:4.7 && \
+        docker push mehbos/openshift-console-modified:4.7
