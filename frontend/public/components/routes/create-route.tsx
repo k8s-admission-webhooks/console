@@ -47,6 +47,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     hostname: '',
     path: '',
     service: null,
+    router: 'internal',
     weight: 100,
     targetPort: '',
     termination: '',
@@ -92,6 +93,12 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     const { value } = event.currentTarget;
     this.setState({
       weight: _.toInteger(value),
+    });
+  };
+
+  changeRouter = (router: string) => {
+    this.setState({
+      router: router,
     });
   };
 
@@ -163,6 +170,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       hostname,
       path,
       service,
+      router,
       weight,
       targetPort: selectedPort,
       termination,
@@ -189,6 +197,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
 
     const serviceName = _.get(service, 'metadata.name');
     const labels = _.get(service, 'metadata.labels');
+    labels['router'] = (router || 'internal').toLowerCase();
 
     // If the port is unnamed, there is only one port. Use the port number.
     const targetPort =
@@ -321,6 +330,11 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       None: 'None',
       Redirect: 'Redirect',
     };
+    const availableRouters = {
+      Internal: 'Internal',
+      Admin: 'Admin',
+      Public: 'Public',
+    };
     const alternateServicesList = _.map(alternateServices, (entryData, index) => {
       return (
         <div className="co-add-remove-form__entry" key={entryData.key}>
@@ -418,6 +432,22 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
               />
               <div className="help-block" id="path-help">
                 <p>Path that the router watches to route traffic to the service.</p>
+              </div>
+            </div>
+            <div className="form-group co-create-route__router">
+              <label className="co-required" htmlFor="router">
+                Router
+              </label>
+              <Dropdown
+                items={availableRouters}
+                title="Select a router"
+                dropDownClassName="dropdown--full-width"
+                id="router"
+                onChange={this.changeRouter}
+                describedBy="router-help"
+                />
+              <div className="help-block" id="router-help">
+                <p>Router that will be used for this route</p>
               </div>
             </div>
             <div className="form-group co-create-route__service">
