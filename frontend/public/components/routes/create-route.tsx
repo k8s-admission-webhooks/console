@@ -743,6 +743,7 @@ export type CreateRouteState = {
   hostname: string;
   path: string;
   service: K8sResourceKind;
+  router: string;
   weight: number;
   targetPort: string;
   termination: string;
