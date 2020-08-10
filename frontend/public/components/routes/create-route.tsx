@@ -196,7 +196,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       : null;
 
     const serviceName = _.get(service, 'metadata.name');
-    let labels = _.get(service, 'metadata.labels');
+    let labels = _.get(service, 'metadata.labels') || {};
     labels['router'] = (router || 'internal').toLowerCase();
 
     // If the port is unnamed, there is only one port. Use the port number.
