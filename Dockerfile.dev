@@ -7,6 +7,6 @@ WORKDIR /go/src/github.com/k8s-admission-webhooks/console/
 RUN ./build-backend.sh && \
     cd ./frontend && \
     yarn install && \
-    yarn run dev
+    yarn run dev-once
 
 CMD [ "/go/src/github.com/k8s-admission-webhooks/console/bin/bridge", "--public-dir=/go/src/github.com/k8s-admission-webhooks/console/frontend/public/dist" ]
