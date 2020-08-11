@@ -136,6 +136,8 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
         // unset tls data if it was set
         newState.destinationCACertificate = '';
         break;
+      case 'edgeUsingACME':
+      case 'reencryptUsingACME':
       case 'passthrough':
         Object.assign(newState, {
           // unset tls data if it was set
@@ -184,9 +186,20 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       alternateServices,
     } = this.state;
 
+    let usingACME = false;
+    let actualTermination = termination;
+    switch (termination) {
+      case 'edgeUsingACME':
+        usingACME = true;
+        actualTermination = 'edge';
+        break;
+      case 'reencryptUsingACME':
+        usingACME = true;
+        actualTermination = 'reencrypt';
+    }
     const tls = secure
       ? {
-          termination,
+          actualTermination,
           insecureEdgeTerminationPolicy,
           certificate,
           key,
@@ -198,6 +211,12 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     const serviceName = _.get(service, 'metadata.name');
     let labels = _.get(service, 'metadata.labels') || {};
     labels['router'] = (router || 'internal').toLowerCase();
+    if (router != 'public' && usingACME) {
+      throw new Error('ACME encryption is only available for public routers');
+    }
+    if (usingACME) {
+      labels['kubernetes.io/tls-acme'] = "true";
+    }
 
     // If the port is unnamed, there is only one port. Use the port number.
     const targetPort =
@@ -320,6 +339,8 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       edge: 'Edge',
       passthrough: 'Passthrough',
       reencrypt: 'Re-encrypt',
+      edgeUsingACME: 'Edge using ACME certificate',
+      reencryptUsingACME: 'Re-encrypt using ACME certificate',
     };
     const insecureTrafficTypes = {
       None: 'None',
