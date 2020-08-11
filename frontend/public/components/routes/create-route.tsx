@@ -262,18 +262,19 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       },
     };
     route.metadata.annotations = annotations;
-    if (usingACME && _.get(route.metadata, 'annotations[' + acmeAnnotationTag + ']') !== "true") {
-      this.setState({
-        error: 'Invalid ACME annotation: ' + JSON.stringify(route.metadata),
-      });
-      return;
-    }
+    //if (usingACME && _.get(route.metadata, 'annotations[' + acmeAnnotationTag + ']') !== "true") {
+    //  this.setState({
+    //    error: 'Invalid ACME annotation: ' + JSON.stringify(route.metadata),
+    //  });
+    //  return;
+    //}
 
     if (!_.isEmpty(alternateBackends)) {
       route.spec.alternateBackends = alternateBackends;
     }
 
     this.setState({ inProgress: true });
+    console.log("Route creation object: " + JSON.stringify(route))
     k8sCreate(RouteModel, route).then(
       () => {
         this.setState({ inProgress: false });
