@@ -239,10 +239,10 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       kind: 'Route',
       apiVersion: 'route.openshift.io/v1',
       metadata: {
+        annotations,
         name,
         namespace,
         labels,
-        annotations,
       },
       spec: {
         to: {
