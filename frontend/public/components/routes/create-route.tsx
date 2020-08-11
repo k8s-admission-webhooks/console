@@ -166,7 +166,6 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
 
   save = (event) => {
     event.preventDefault();
-    console.log("No throw error handling ...");
 
     const {
       name,
@@ -263,9 +262,9 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       },
     };
     route.metadata.annotations = annotations;
-    if (usingACME && _.get(route.metadata, 'annotations[acmeAnnotationTag]') !== "true") {
+    if (usingACME && _.get(route.metadata, 'annotations[' + acmeAnnotationTag + ']') !== "true") {
       this.setState({
-        error: 'Invalid ACME annotation',
+        error: 'Invalid ACME annotation: ' + JSON.stringify(route.metadata),
       });
       return;
     }
