@@ -214,7 +214,10 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     let labels = _.get(service, 'metadata.labels') || {};
     labels['router'] = (router || 'internal').toLowerCase();
     if (labels['router'] != 'public' && usingACME) {
-      throw new Error('ACME encryption is only available for public routers');
+      this.setState({
+        error: 'ACME encryption is only available for public routers',
+      });
+      return;
     }
 
     let annotations = {};
@@ -260,7 +263,10 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       },
     };
     if (usingACME && _.get(route.metadata, 'annotations[acmeAnnotationTag]') !== "true") {
-      throw new Error('Invalid ACME annotation');
+      this.setState({
+        error: 'Invalid ACME annotation',
+      });
+      return;
     }
 
     if (!_.isEmpty(alternateBackends)) {
