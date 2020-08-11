@@ -209,13 +209,16 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       : null;
 
     const serviceName = _.get(service, 'metadata.name');
+
     let labels = _.get(service, 'metadata.labels') || {};
     labels['router'] = (router || 'internal').toLowerCase();
     if (labels['router'] != 'public' && usingACME) {
       throw new Error('ACME encryption is only available for public routers');
     }
+
+    let annotations = {};
     if (usingACME) {
-      labels['kubernetes.io/tls-acme'] = "true";
+      annotations['kubernetes.io/tls-acme'] = "true";
     }
 
     // If the port is unnamed, there is only one port. Use the port number.
@@ -239,6 +242,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
         name,
         namespace,
         labels,
+        annotations,
       },
       spec: {
         to: {
