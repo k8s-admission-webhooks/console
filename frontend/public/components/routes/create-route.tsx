@@ -201,7 +201,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
 
     // If the port is unnamed, there is only one port. Use the port number.
     const targetPort =
-      selectedPort === UNNAMED_PORT_KEY ? _.get(service, 'spec.ports[0].port') : selectedPort;
+      selectedPort === UNNAMED_PORT_KEY ? _.get(service, 'spec.ports[0].targetPort') : selectedPort;
 
     const alternateBackends = _.filter(alternateServices, 'name').map(
       (serviceData: AlternateServiceEntryType) => {
