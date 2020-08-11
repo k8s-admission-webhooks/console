@@ -166,6 +166,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
 
   save = (event) => {
     event.preventDefault();
+    console.log("No throw error handling ...");
 
     const {
       name,
@@ -243,7 +244,6 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
       kind: 'Route',
       apiVersion: 'route.openshift.io/v1',
       metadata: {
-        annotations,
         name,
         namespace,
         labels,
@@ -262,6 +262,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
         },
       },
     };
+    route.metadata.annotations = annotations;
     if (usingACME && _.get(route.metadata, 'annotations[acmeAnnotationTag]') !== "true") {
       this.setState({
         error: 'Invalid ACME annotation',
