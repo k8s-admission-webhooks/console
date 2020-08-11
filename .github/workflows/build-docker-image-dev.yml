@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build the Docker image
+    - name: Build the Docker dev image
       run: docker build . --file Dockerfile.dev --tag mehbos/openshift-console-modified:dev-4.7
     - name: Push docker image
       env:
