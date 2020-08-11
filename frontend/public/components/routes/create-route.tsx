@@ -211,7 +211,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     const serviceName = _.get(service, 'metadata.name');
     let labels = _.get(service, 'metadata.labels') || {};
     labels['router'] = (router || 'internal').toLowerCase();
-    if (router != 'public' && usingACME) {
+    if (labels['router'] != 'public' && usingACME) {
       throw new Error('ACME encryption is only available for public routers');
     }
     if (usingACME) {
@@ -607,7 +607,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
                       <p>Policy for traffic on insecure schemes like HTTP.</p>
                     </div>
                   </div>
-                  {termination && termination !== 'passthrough' && (
+                  {termination && termination !== 'passthrough' && termination !== 'edgeUsingACME' && termination !== 'reencryptUsingACME' && (
                     <>
                       <h2 className="h3">Certificates</h2>
                       <div className="help-block">
