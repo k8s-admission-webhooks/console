@@ -274,7 +274,6 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     }
 
     this.setState({ inProgress: true });
-    console.log("Route creation object: " + JSON.stringify(route))
     k8sCreate(RouteModel, route).then(
       () => {
         this.setState({ inProgress: false });
