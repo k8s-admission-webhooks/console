@@ -10,8 +10,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    # In this step, this action saves a list of existing images,
+    # the cache is created without them in the post run.
+    # It also restores the cache if it exists.
+    - uses: satackey/action-docker-layer-caching@v0.0.5
+
+    # build actual dev image
     - name: Build the Docker dev image
       run: docker build . --file Dockerfile.dev --tag mehbos/openshift-console-modified:dev-4.7
+
+    # and push it to dockerHub
     - name: Push docker image
       env:
         docker_uid: ${{ secrets.DOCKER_USERNAME }}

@@ -3,5 +3,5 @@
 set -e
 
 pushd frontend
-yarn run build
+yarn run dev-once
 popd

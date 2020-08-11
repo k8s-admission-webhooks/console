@@ -4,9 +4,11 @@ RUN mkdir -p /go/src/github.com/k8s-admission-webhooks/console/
 ADD . /go/src/github.com/k8s-admission-webhooks/console/
 WORKDIR /go/src/github.com/k8s-admission-webhooks/console/
 
-RUN ./build-backend.sh && \
-    cd ./frontend && \
-    yarn install && \
-    yarn run dev-once
+# Separating this step will allow us layer caching in docker build
+RUN ./build-frontend-prepare.sh
+# Also separate backend build for layer caching
+RUN ./build-backend.sh
+# And at last, build the frontend
+RUN ./build-frontend-dev.sh
 
 CMD [ "/go/src/github.com/k8s-admission-webhooks/console/bin/bridge", "--public-dir=/go/src/github.com/k8s-admission-webhooks/console/frontend/public/dist" ]

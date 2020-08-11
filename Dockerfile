@@ -3,7 +3,9 @@ FROM quay.io/coreos/tectonic-console-builder:v20 AS build
 RUN mkdir -p /go/src/github.com/k8s-admission-webhooks/console/
 ADD . /go/src/github.com/k8s-admission-webhooks/console/
 WORKDIR /go/src/github.com/k8s-admission-webhooks/console/
-RUN ./build.sh
+RUN ./build-frontend-prepare.sh
+RUN ./build-backend.sh
+RUN ./build-frontend.sh
 
 FROM openshift/origin-base
 
