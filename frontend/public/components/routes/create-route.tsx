@@ -208,6 +208,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
         }
       : null;
 
+    const acmeAnnotationTag = 'kubernetes.io/tls-acme';
     const serviceName = _.get(service, 'metadata.name');
 
     let labels = _.get(service, 'metadata.labels') || {};
@@ -218,7 +219,7 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
 
     let annotations = {};
     if (usingACME) {
-      annotations['kubernetes.io/tls-acme'] = "true";
+      annotations[acmeAnnotationTag] = "true";
     }
 
     // If the port is unnamed, there is only one port. Use the port number.
@@ -258,6 +259,9 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
         },
       },
     };
+    if (usingACME && _.get(route.metadata, 'annotations[acmeAnnotationTag]') !== "true") {
+      throw new Error('Invalid ACME annotation');
+    }
 
     if (!_.isEmpty(alternateBackends)) {
       route.spec.alternateBackends = alternateBackends;
