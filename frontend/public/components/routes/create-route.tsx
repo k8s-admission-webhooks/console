@@ -221,8 +221,8 @@ export class CreateRoute extends React.Component<{}, CreateRouteState> {
     }
 
     let actualHostName = hostname;
-    if (!actualHostName || actualHostName.endsWith('ic.could.snapp.ir')) {
-      actualHostName = name + '-' + namespace + '.' + labels['router'] + '.ic.cloud.snapp.ir';
+    if (!actualHostName || actualHostName.endsWith('ic.apps.could.snapp.ir')) {
+      actualHostName = name + '-' + namespace + '.' + labels['router'] + '.ic.apps.cloud.snapp.ir';
     }
 
     let annotations = {};
