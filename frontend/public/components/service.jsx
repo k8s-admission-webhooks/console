@@ -36,6 +36,23 @@ const ServiceIP = ({ s }) => {
 
   return children;
 };
+const ServiceExternalIP = ({ s }) => {
+  const result = [];
+  const ingressArray = _.get(s, 'status.loadBalancer.ingress') || [];
+  for (let i = 0; i < s.spec.ports.length; i++) {
+    const portObj = s.spec.ports[i];
+    for (let j = 0; j < ingressArray.length; j++) {
+      const ingressObj = ingressArray[j];
+      result.push(
+        <div key={(i << 8) | j} className="co-truncate co-select-to-copy">
+          {ingressObj.ip}:{portObj.port}
+        </div>,
+      );
+    }
+  }
+  //console.log("IngressIPs.result: %s", JSON.stringify(result));
+  return result;
+};
 
 const kind = 'Service';
 
@@ -43,6 +60,7 @@ const tableColumnClasses = [
   classNames('col-lg-3', 'col-md-3', 'col-sm-4', 'col-xs-6'),
   classNames('col-lg-2', 'col-md-3', 'col-sm-4', 'col-xs-6'),
   classNames('col-lg-3', 'col-md-3', 'col-sm-4', 'hidden-xs'),
+  classNames('col-lg-2', 'col-md-3', 'hidden-sm', 'hidden-xs'),
   classNames('col-lg-2', 'col-md-3', 'hidden-sm', 'hidden-xs'),
   classNames('col-lg-2', 'hidden-md', 'hidden-sm', 'hidden-xs'),
   Kebab.columnClass,
@@ -76,14 +94,20 @@ const ServiceTableHeader = () => {
       props: { className: tableColumnClasses[3] },
     },
     {
-      title: 'Location',
+      title: 'Internal IP',
       sortField: 'spec.clusterIP',
       transforms: [sortable],
       props: { className: tableColumnClasses[4] },
     },
     {
-      title: '',
+      title: 'External IP',
+      sortField: 'status.loadBalancer.ingress.ip',
+      transforms: [sortable],
       props: { className: tableColumnClasses[5] },
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[6] },
     },
   ];
 };
@@ -116,6 +140,9 @@ const ServiceTableRow = ({ obj: s, index, key, style }) => {
         <ServiceIP s={s} />
       </TableData>
       <TableData className={tableColumnClasses[5]}>
+        <ServiceExternalIP s={s} />
+      </TableData>
+      <TableData className={tableColumnClasses[6]}>
         <ResourceKebab actions={menuActions} kind={kind} resource={s} />
       </TableData>
     </TableRow>
