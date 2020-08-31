@@ -53,6 +53,10 @@ const ServiceExternalIP = ({ s }) => {
   //console.log("IngressIPs.result: %s", JSON.stringify(result));
   return result;
 };
+const ServiceLocation = ({ s }) => {
+  const location = `${s.metadata.name}.${s.metadata.namespace}.svc.cluster.local`;
+  return <div className="co-select-to-copy">{location}</div>;
+};
 
 const kind = 'Service';
 
@@ -60,6 +64,7 @@ const tableColumnClasses = [
   classNames('col-lg-3', 'col-md-3', 'col-sm-4', 'col-xs-6'),
   classNames('col-lg-2', 'col-md-3', 'col-sm-4', 'col-xs-6'),
   classNames('col-lg-3', 'col-md-3', 'col-sm-4', 'hidden-xs'),
+  classNames('col-lg-2', 'col-md-3', 'hidden-sm', 'hidden-xs'),
   classNames('col-lg-2', 'col-md-3', 'hidden-sm', 'hidden-xs'),
   classNames('col-lg-2', 'col-md-3', 'hidden-sm', 'hidden-xs'),
   classNames('col-lg-2', 'hidden-md', 'hidden-sm', 'hidden-xs'),
@@ -94,20 +99,24 @@ const ServiceTableHeader = () => {
       props: { className: tableColumnClasses[3] },
     },
     {
-      title: 'Internal IP',
-      sortField: 'spec.clusterIP',
-      transforms: [sortable],
+      title: 'Service Address',
       props: { className: tableColumnClasses[4] },
     },
     {
-      title: 'External IP',
-      sortField: 'status.loadBalancer.ingress.ip',
+      title: 'Internal Location',
+      sortField: 'spec.clusterIP',
       transforms: [sortable],
       props: { className: tableColumnClasses[5] },
     },
     {
-      title: '',
+      title: 'External Location',
+      sortField: 'status.loadBalancer.ingress.ip',
+      transforms: [sortable],
       props: { className: tableColumnClasses[6] },
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[7] },
     },
   ];
 };
@@ -137,12 +146,15 @@ const ServiceTableRow = ({ obj: s, index, key, style }) => {
         <Selector selector={s.spec.selector} namespace={s.metadata.namespace} />
       </TableData>
       <TableData className={tableColumnClasses[4]}>
-        <ServiceIP s={s} />
+        <ServiceLocation s={s} />
       </TableData>
       <TableData className={tableColumnClasses[5]}>
-        <ServiceExternalIP s={s} />
+        <ServiceIP s={s} />
       </TableData>
       <TableData className={tableColumnClasses[6]}>
+        <ServiceExternalIP s={s} />
+      </TableData>
+      <TableData className={tableColumnClasses[7]}>
         <ResourceKebab actions={menuActions} kind={kind} resource={s} />
       </TableData>
     </TableRow>
@@ -303,8 +315,14 @@ const ServicesList = (props) => (
     virtualize
   />
 );
-const ServicesPage = (props) => (
-  <ListPage canCreate={true} ListComponent={ServicesList} {...props} />
-);
+const ServicesPage = (props) => {
+  const createProps = {
+    to: `/k8s/ns/${props.namespace || 'default'}/services/~new/form`,
+  };
+
+  return (
+    <ListPage canCreate={true} createProps={createProps} ListComponent={ServicesList} {...props} />
+  );
+};
 
 export { ServicesList, ServicesPage, ServicesDetailsPage };
