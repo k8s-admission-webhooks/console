@@ -7,7 +7,7 @@ import { DetailsPage, ListPage, Table, TableRow, TableData } from './factory';
 import {
   DetailsItem,
   Kebab,
-  LabelList,
+  //LabelList,
   ResourceIcon,
   ResourceKebab,
   ResourceLink,
@@ -86,12 +86,12 @@ const ServiceTableHeader = () => {
       props: { className: tableColumnClasses[1] },
       id: 'namespace',
     },
-    {
-      title: 'Labels',
-      sortField: 'metadata.labels',
-      transforms: [sortable],
-      props: { className: tableColumnClasses[2] },
-    },
+    // {
+    //   title: 'Labels',
+    //   sortField: 'metadata.labels',
+    //   transforms: [sortable],
+    //   props: { className: tableColumnClasses[2] },
+    // },
     {
       title: 'Pod Selector',
       sortField: 'spec.selector',
@@ -139,9 +139,9 @@ const ServiceTableRow = ({ obj: s, index, key, style }) => {
       >
         <ResourceLink kind="Namespace" name={s.metadata.namespace} title={s.metadata.namespace} />
       </TableData>
-      <TableData className={tableColumnClasses[2]}>
+      {/* <TableData className={tableColumnClasses[2]}>
         <LabelList kind={kind} labels={s.metadata.labels} />
-      </TableData>
+      </TableData> */}
       <TableData className={tableColumnClasses[3]}>
         <Selector selector={s.spec.selector} namespace={s.metadata.namespace} />
       </TableData>
