@@ -4,18 +4,35 @@ import { Link } from 'react-router-dom';
 import { Alert, ActionGroup, Button } from '@patternfly/react-core';
 import { PlusCircleIcon, MinusCircleIcon } from '@patternfly/react-icons';
 import { ButtonBar, Dropdown, history, ResourceName, resourcePathFromModel } from '../utils';
-import { k8sCreate, k8sList, K8sResourceKind } from '../../module/k8s';
+import { k8sCreate, k8sList, K8sResourceKind, K8sKind } from '../../module/k8s';
 import { getActiveNamespace } from '../../actions/ui';
-import { DeploymentModel, DeploymentConfigModel, ServiceModel } from '../../models';
+import {
+  DeploymentModel,
+  DeploymentConfigModel,
+  StatefulSetModel,
+  ReplicationControllerModel,
+  ReplicaSetModel,
+  DaemonSetModel,
+  ServiceModel,
+} from '../../models';
 
 const MAX_PORT_COUNT = -1;
+const sourceModels = [
+  DeploymentModel,
+  DeploymentConfigModel,
+  StatefulSetModel,
+  ReplicationControllerModel,
+  ReplicaSetModel,
+  DaemonSetModel,
+];
 
 export class CreateService extends React.Component<{}, CreateServiceState> {
   state = {
     name: '',
     namespace: getActiveNamespace(),
-    sourceType: 'Deployment' as ExposeServiceSourceType,
-    source: '',
+    selectedModelIndex: -1,
+    selectedComponentIndex: 0,
+    loadedResources: sourceModels.map(() => null) as K8sResourceKind[][],
     type: 'ClusterIP' as ExposeServiceType,
     externalName: '',
     headlessService: false,
@@ -26,105 +43,28 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
         key: _.uniqueId('service-port-'),
       },
     ] as ServicePort[],
-    deploymentListLoaded: false,
-    deployments: [],
-    deploymentConfigListLoaded: false,
-    deploymentConfigs: [],
     inProgress: false,
     error: '',
   };
 
-  componentDidMount() {
-    k8sList(DeploymentModel, { ns: this.state.namespace })
-      .then((deployments) => {
-        this.setState({
-          deployments,
-          deploymentListLoaded: true,
-        });
-      })
-      .catch((err) => {
-        this.setState({ error: err.message });
-      });
-    k8sList(DeploymentConfigModel, { ns: this.state.namespace })
-      .then((deploymentConfigs) => {
-        this.setState({
-          deploymentConfigs,
-          deploymentConfigListLoaded: true,
-        });
-      })
-      .catch((err) => {
-        this.setState({
-          error: err.message,
-        });
-      });
+  getSource(
+    loadedResources: (K8sResourceKind[] | string | null)[],
+    selectedModelIndex: number,
+    selectedComponentIndex: number,
+  ): K8sResourceKind | null {
+    if (selectedModelIndex < 0) {
+      return null;
+    }
+    const components = loadedResources[selectedModelIndex];
+    if (
+      components === null ||
+      typeof components === 'string' ||
+      selectedComponentIndex >= components.length
+    ) {
+      return null;
+    }
+    return components[selectedComponentIndex];
   }
-  save = (event) => {
-    event.preventDefault();
-
-    const {
-      name,
-      namespace,
-      type,
-      externalName,
-      headlessService,
-      sourceType,
-      source,
-      ports,
-      deployments,
-      deploymentConfigs,
-    } = this.state;
-
-    const sourceObject = _.find(sourceType === 'Deployment' ? deployments : deploymentConfigs, {
-      metadata: { name: source },
-    });
-
-    const service: K8sResourceKind = {
-      apiVersion: 'v1',
-      kind: 'Service',
-      metadata: { name, namespace },
-      spec: {
-        type,
-        selector: sourceObject.spec.selector,
-        ports: _.map(ports, (p) => {
-          const result: ServicePortNoKey = {
-            protocol: p.protocol,
-          };
-          if (p.name) {
-            result.name = p.name;
-          }
-          if (p.port) {
-            result.port = p.port;
-          }
-          if (p.targetPort) {
-            result.targetPort = p.targetPort;
-          }
-          return result;
-        }),
-      },
-    };
-    if (type === 'ExternalName') {
-      service.spec.externalName = externalName;
-    }
-    if (headlessService) {
-      service.spec.clusterIP = 'None';
-    }
-
-    this.setState({ inProgress: true });
-    k8sCreate(ServiceModel, service).then(
-      () => {
-        this.setState({
-          inProgress: false,
-        });
-        history.push(resourcePathFromModel(ServiceModel, name, namespace));
-      },
-      (err) => {
-        this.setState({
-          inProgress: false,
-          error: err.message,
-        });
-      },
-    );
-  };
   handleChange: React.ReactEventHandler<HTMLInputElement> = (event) => {
     const target = event.currentTarget;
     const name = target.name;
@@ -132,17 +72,6 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
     this.setState({
       [name]: value,
     } as any);
-  };
-  changeSourceType = (value: ExposeServiceSourceType) => {
-    this.setState({
-      source: '',
-      sourceType: value,
-    });
-  };
-  changeSource = (value: string) => {
-    this.setState({
-      source: value,
-    });
   };
   changeServiceType = (value: ExposeServiceType) => {
     this.setState({
@@ -194,12 +123,32 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
       };
     });
   };
+
+  componentDidMount() {
+    _.forEach(sourceModels, (model, i) => {
+      k8sList(model, { ns: this.state.namespace })
+        .then((items) => {
+          this.setState(({ loadedResources, selectedModelIndex }) => {
+            const updatedResources = [...loadedResources];
+            updatedResources[i] = items;
+            if (selectedModelIndex < 0 && items.length) {
+              selectedModelIndex = i;
+            }
+            return { selectedModelIndex, loadedResources: updatedResources };
+          });
+        })
+        .catch((err) => {
+          this.setState(({ loadedResources }) => {
+            const updatedResources = [...loadedResources];
+            updatedResources[i] = err.message;
+            return { loadedResources: updatedResources };
+          });
+        });
+    });
+  }
+
   render() {
     const title = 'Create Service';
-    const sourceTypeOptions = {
-      Deployment: 'Deployment',
-      DeploymentConfig: 'DeploymentConfig',
-    };
     const serviceTypeOptions = {
       ClusterIP: 'ClusterIP',
       LoadBalancer: 'LoadBalancer',
@@ -212,34 +161,15 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
     const {
       name,
       namespace,
-      deploymentListLoaded,
-      deployments,
-      deploymentConfigListLoaded,
-      deploymentConfigs,
-      sourceType,
+      selectedModelIndex,
+      selectedComponentIndex,
+      loadedResources,
       type,
       externalName,
       headlessService,
       sessionAffinity,
       ports,
     } = this.state;
-    let loaded: boolean = false;
-    const sourceOptions = {};
-    if (sourceType === 'Deployment') {
-      loaded = deploymentListLoaded;
-      _.each(
-        _.sortBy(deployments, 'metadata.name'),
-        ({ metadata: { resname } }) =>
-          (sourceOptions[resname] = <ResourceName kind="Deployment" name={resname} />),
-      );
-    } else {
-      loaded = deploymentConfigListLoaded;
-      _.each(
-        _.sortBy(deploymentConfigs, 'metadata.name'),
-        ({ metadata: { resname } }) =>
-          (sourceOptions[resname] = <ResourceName kind="DeploymentConfig" name={resname} />),
-      );
-    }
 
     const portOptions = _.map(ports, (port, index) => {
       return (
@@ -294,52 +224,23 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
                 <p>A unique name for the service within the project.</p>
               </div>
             </div>
-            <div className="form-group co-create-service__source_from">
-              <label htmlFor="sourceType">Source From</label>
-              <Dropdown
-                id="sourceType"
-                name="sourceType"
-                items={sourceTypeOptions}
-                selectedKey={sourceType}
-                title="Select source of the service"
-                dropDownClassName="dropdown--full-width"
-                onChange={this.changeSourceType}
-              />
-              <div className="help-block" id="sourceType-help">
-                <p>Where is the source of the service?</p>
-              </div>
-            </div>
-            <div className="form-group co-create-service__source">
-              <label className="co-required" htmlFor="source">
-                Source
-              </label>
-              {loaded && _.isEmpty(sourceOptions) && (
-                <Alert
-                  isInline
-                  className="co-alert co-create-service__alert"
-                  variant="info"
-                  title={sourceType === 'Deployment' ? 'No Deployment' : 'No DeploymentConfig'}
-                >
-                  {sourceType === 'Deployment'
-                    ? 'There are no Deployment in current project'
-                    : 'There are no DeploymentConfig in current projecct'}
-                </Alert>
-              )}
-              {loaded && !_.isEmpty(sourceOptions) && (
-                <Dropdown
-                  id="source"
-                  name="source"
-                  items={sourceOptions}
-                  dropDownClassName="dropdown--full-width"
-                  onChange={this.changeSource}
-                />
-              )}
-              <div className="help-block" id="service-help">
-                {sourceType === 'Deployment'
-                  ? 'Deployment to expose'
-                  : 'DeploymentConfig to expose'}
-              </div>
-            </div>
+            <SourceSelector
+              models={sourceModels}
+              selectedModelIndex={selectedModelIndex}
+              components={loadedResources[selectedModelIndex]}
+              selectedComponentIndex={selectedComponentIndex}
+              onTypeChange={(i: number) => {
+                this.setState({
+                  selectedModelIndex: i,
+                  selectedComponentIndex: 0,
+                });
+              }}
+              onChange={(i: number) => {
+                this.setState({
+                  selectedComponentIndex: i,
+                });
+              }}
+            />
             <div className="form-group co-create-service__type">
               <label htmlFor="type">Type</label>
               <Dropdown
@@ -385,7 +286,7 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
                   checked={headlessService}
                   onChange={this.handleChange}
                 />
-                Headless service
+                <span>Headless service</span>
               </label>
               <div className="help-block">
                 <p>
@@ -429,7 +330,10 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
               <ActionGroup className="pf-c-form">
                 <Button
                   type="submit"
-                  isDisabled={!this.state.name || !this.state.source}
+                  isDisabled={
+                    !this.state.name ||
+                    !this.getSource(loadedResources, selectedModelIndex, selectedComponentIndex)
+                  }
                   id="save-changes"
                   variant="primary"
                 >
@@ -445,6 +349,79 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
       </>
     );
   }
+
+  save = (event) => {
+    event.preventDefault();
+
+    const {
+      name,
+      namespace,
+      type,
+      externalName,
+      headlessService,
+      selectedModelIndex,
+      selectedComponentIndex,
+      ports,
+      loadedResources,
+    } = this.state;
+
+    const sourceObject = this.getSource(
+      loadedResources,
+      selectedModelIndex,
+      selectedComponentIndex,
+    );
+    if (sourceObject === null) {
+      this.setState({
+        error: 'Please select a source item',
+      });
+      return;
+    }
+
+    const service: K8sResourceKind = {
+      apiVersion: 'v1',
+      kind: 'Service',
+      metadata: { name, namespace },
+      spec: {
+        type,
+        selector: sourceObject.spec.selector,
+        ports: _.map(ports, (p) => {
+          const result: ServicePortNoKey = {
+            protocol: p.protocol,
+          };
+          if (p.name) {
+            result.name = p.name;
+          }
+          if (p.port) {
+            result.port = p.port;
+          }
+          if (p.targetPort) {
+            result.targetPort = p.targetPort;
+          }
+          return result;
+        }),
+      },
+    };
+    if (type === 'ExternalName') {
+      service.spec.externalName = externalName;
+    }
+    if (headlessService) {
+      service.spec.clusterIP = 'None';
+    }
+
+    this.setState({ inProgress: true });
+    k8sCreate(ServiceModel, service).then(
+      () => {
+        this.setState({ inProgress: false });
+        history.push(resourcePathFromModel(ServiceModel, name, namespace));
+      },
+      (err) => {
+        this.setState({
+          inProgress: false,
+          error: err.message,
+        });
+      },
+    );
+  };
 }
 
 export const PortGroup: React.FC<PortGroupProps> = (props) => {
@@ -533,8 +510,161 @@ export const PortGroup: React.FC<PortGroupProps> = (props) => {
     </>
   );
 };
+export const SourceSelector: React.FC<SourceSelectorProps> = (props) => {
+  const {
+    models,
+    selectedComponentIndex,
+    selectedModelIndex,
+    components,
+    onTypeChange,
+    onChange,
+  } = props;
 
-export type ExposeServiceSourceType = 'Deployment' | 'DeploymentConfig';
+  const getModelKey = (index: number): string =>
+    index < 0 || index >= models.length ? null : models[index].id;
+  const getModelIndexFromKey = (key: string): number => _.findIndex(models, (m) => m.id === key);
+
+  const getComponentKey = (index: number): string =>
+    index < 0 || index >= components.length ? null : components[index].metadata.name;
+  const getComponentIndexFromKey = (key: string): number =>
+    _.findIndex(components, (c) => c.metadata.name === key);
+
+  const sourceTypeOptions = {};
+  _.forEach(models, (model, i) => {
+    const key = getModelKey(i);
+    sourceTypeOptions[key] = <ResourceName kind={model.kind} name={model.label} />;
+  });
+  const modelTitle =
+    selectedModelIndex < 0 || selectedModelIndex >= models.length
+      ? undefined
+      : sourceTypeOptions[getModelKey(selectedModelIndex)];
+
+  const sourceOptions = {};
+  if (components !== null) {
+    _.forEach(components, (component, i) => {
+      const key = getComponentKey(i);
+      sourceOptions[key] = <ResourceName kind={component.kind} name={component.metadata.name} />;
+    });
+  }
+  const sourceTitle =
+    components !== null &&
+    typeof components !== 'string' &&
+    !_.isEmpty(components) &&
+    selectedComponentIndex >= 0 &&
+    selectedComponentIndex < components.length
+      ? sourceOptions[getComponentKey(selectedComponentIndex)]
+      : undefined;
+
+  return (
+    <>
+      <div className="form-group co-create-service__source_type">
+        <label htmlFor="source_type">Type of the source</label>
+        <Dropdown
+          id="source_type"
+          name="source_type"
+          items={sourceTypeOptions}
+          selectedKey={getModelKey(selectedModelIndex)}
+          onChange={(key: string) => onTypeChange(getModelIndexFromKey(key))}
+          dropDownClassName="dropdown--full-width"
+          title={modelTitle}
+          required
+        />
+        <div className="help-block">
+          <p>Where we should look for the source of the service</p>
+        </div>
+      </div>
+      <div className="form-group co-create-service__source">
+        <label htmlFor="source">Source of the service</label>
+        {selectedModelIndex < 0 && (
+          <Alert
+            isInline
+            className="co-alert co-create-service__no_type"
+            variant="info"
+            title="No type is selected"
+          >
+            Please select type of the source
+          </Alert>
+        )}
+        {selectedModelIndex >= 0 && components === null && (
+          <Alert
+            isInline
+            className="co-alert co-create-service__loading"
+            variant="info"
+            title="Loading data"
+          >
+            Still loading data from the server
+          </Alert>
+        )}
+        {selectedModelIndex >= 0 && components !== null && typeof components === 'string' && (
+          <Alert
+            isInline
+            className="co-alert co-create-service__error"
+            variant="warning"
+            title="Error in loading items"
+          >
+            Error in loading <b>{models[selectedModelIndex].label}</b> from the server
+          </Alert>
+        )}
+        {selectedModelIndex >= 0 &&
+          components !== null &&
+          typeof components !== 'string' &&
+          _.isEmpty(components) && (
+            <Alert
+              isInline
+              className="co-alert co-create-service__alert"
+              variant="info"
+              title="No items"
+            >
+              {`There is no <b>${models[selectedModelIndex].label}</b> in your project`}
+            </Alert>
+          )}
+        {selectedModelIndex >= 0 &&
+          components !== null &&
+          typeof components !== 'string' &&
+          !_.isEmpty(components) && (
+            <>
+              <Dropdown
+                id="source"
+                name="source"
+                items={sourceOptions}
+                selectedKey={getComponentKey(selectedComponentIndex)}
+                onChange={(key: string) => onChange(getComponentIndexFromKey(key))}
+                dropDownClassName="dropdown--full-width"
+                title={sourceTitle}
+              />
+              <div className="help-block">
+                <p>Select the object that is source of the service</p>
+              </div>
+            </>
+          )}
+      </div>
+    </>
+  );
+};
+
+export type PortGroupProps = {
+  port: ServicePort;
+  onChange: Function;
+  onRemove: Function;
+  index: number;
+  canRemove: boolean;
+};
+export type SourceSelectorProps = {
+  // list of models tat we must selected from them
+  models: K8sKind[];
+  // index of selected model
+  selectedModelIndex: number;
+  // index of selected component or null if there is no selected source
+  selectedComponentIndex: number;
+  // list of component that user should selected from them
+  components: K8sResourceKind[];
+  // will be called when type of component changed
+  onTypeChange: Function;
+  // will be called when selected source change
+  onChange: Function;
+};
+
+//export type ExposeServiceSourceType = 'Deployment' | 'DeploymentConfig' | 'StatefullSet' | 'ReplicationController' | 'ReplicaSet' | 'DaemonSet';
 export type ExposeServiceAffinityType = 'None' | 'Client';
 export type ExposeServiceType = 'ClusterIP' | 'LoadBalancer' | 'ExternalName' /* | 'NodePort' */;
 export type ServicePortType = 'TCP' | 'UDP' | 'SCTP' /* | 'NodePort' */;
@@ -548,27 +678,17 @@ export type ServicePort = ServicePortNoKey & {
   key: string;
   targetPortAssignedByUser?: boolean;
 };
-type PortGroupProps = {
-  port: ServicePort;
-  onChange: Function;
-  onRemove: Function;
-  index: number;
-  canRemove: boolean;
-};
 export type CreateServiceState = {
   name: string;
   namespace: string;
-  sourceType: ExposeServiceSourceType;
-  source: string;
+  selectedModelIndex: number;
+  selectedComponentIndex: number;
   type: ExposeServiceType;
   externalName: string;
   headlessService: boolean;
   sessionAffinity: ExposeServiceAffinityType;
   ports: ServicePort[];
-  deploymentListLoaded: boolean;
-  deployments: K8sResourceKind[];
-  deploymentConfigListLoaded: boolean;
-  deploymentConfigs: K8sResourceKind[];
+  loadedResources: (K8sResourceKind[] | string | null)[];
   inProgress: boolean;
   error: string;
 };
