@@ -437,7 +437,7 @@ export const PortGroup: React.FC<PortGroupProps> = (props) => {
   };
 
   return (
-    <>
+    <div className={`co-create-service-port-group co-create-service-port_group_${index & 1}`}>
       <div className="form-group">
         <label htmlFor={`port-${index}-name`}>Name</label>
         <input
@@ -510,7 +510,7 @@ export const PortGroup: React.FC<PortGroupProps> = (props) => {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 export const SourceSelector: React.FC<SourceSelectorProps> = (props) => {
