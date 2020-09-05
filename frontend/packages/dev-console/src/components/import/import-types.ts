@@ -157,6 +157,7 @@ export interface DockerData {
 export interface RouteData {
   disable?: boolean;
   create: boolean;
+  routerName?: string;
   targetPort: string;
   unknownTargetPort?: string;
   defaultUnknownPort?: number;
@@ -256,6 +257,12 @@ export enum TerminationTypes {
   reencrypt = 'Re-encrypt',
   edgeUsingACME = 'Edge using ACME certificate',
   reencryptUsingACME = 'Re-encrypt using ACME certificate',
+}
+
+export enum AvailableRouters {
+  internalRouter = 'Internal',
+  adminRouter = 'Admin',
+  publicRouter = 'Public',
 }
 
 export enum InsecureTrafficTypes {

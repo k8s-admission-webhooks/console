@@ -154,6 +154,7 @@ const ImportForm: React.FC<ImportFormProps & StateProps> = ({
     const {
       project: { name: projectName },
       route: {
+        routerName,
         tls: { termination },
       },
     } = values;
@@ -178,6 +179,7 @@ const ImportForm: React.FC<ImportFormProps & StateProps> = ({
       };
       values.route.tls.termination = termination === 'edgeUsingACME' ? 'edge' : 'reencrypt';
     }
+    values.labels.router = routerName;
     const resourceActions = createOrUpdateResources(
       values,
       imageStream,

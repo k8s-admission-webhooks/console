@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { useFormikContext, FormikValues } from 'formik';
+// import { TextInputTypes } from '@patternfly/react-core';
 import { FormHelperText } from '@patternfly/react-core';
 import { DropdownField, DroppableFileInputField, CheckboxField } from '@console/shared';
 import {
   TerminationTypes,
   PassthroughInsecureTrafficTypes,
   InsecureTrafficTypes,
+  AvailableRouters,
 } from '../import-types';
 
 const SecureRoute: React.FC = () => {
@@ -24,6 +26,13 @@ const SecureRoute: React.FC = () => {
       />
       {secure && (
         <>
+          <DropdownField
+            name="route.routerName"
+            label="Router"
+            items={AvailableRouters}
+            helpText="Router that should be used for this route."
+            fullWidth
+          />
           <DropdownField
             name="route.tls.termination"
             label="TLS Termination"

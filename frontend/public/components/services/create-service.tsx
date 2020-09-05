@@ -605,7 +605,9 @@ export const SourceSelector: React.FC<SourceSelectorProps> = (props) => {
             variant="warning"
             title="Error in loading items"
           >
-            Error in loading <b>{models[selectedModelIndex].label}</b> from the server
+            <span>
+              Error in loading <b>{models[selectedModelIndex].label}</b> from the server
+            </span>
           </Alert>
         )}
         {selectedModelIndex >= 0 &&
