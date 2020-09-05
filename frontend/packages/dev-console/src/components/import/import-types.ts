@@ -254,6 +254,8 @@ export enum TerminationTypes {
   edge = 'Edge',
   passthrough = 'Passthrough',
   reencrypt = 'Re-encrypt',
+  edgeUsingACME = 'Edge using ACME certificate',
+  reencryptUsingACME = 'Re-encrypt using ACME certificate',
 }
 
 export enum InsecureTrafficTypes {

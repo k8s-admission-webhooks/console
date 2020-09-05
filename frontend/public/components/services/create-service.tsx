@@ -404,6 +404,9 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
     if (type === 'ExternalName') {
       service.spec.externalName = externalName;
     }
+    if (type === 'LoadBalancer') {
+      service.spec.externalTrafficPolicy = 'Local';
+    }
     if (headlessService) {
       service.spec.clusterIP = 'None';
     }
