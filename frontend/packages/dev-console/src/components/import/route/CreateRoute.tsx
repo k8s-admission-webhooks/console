@@ -60,6 +60,7 @@ const CreateRoute: React.FC = () => {
         name="route.routerName"
         label="Router"
         items={AvailableRouters}
+        title="Select a router"
         helpText="Router that should be used for this route."
         fullWidth
       />
