@@ -377,13 +377,27 @@ export class CreateService extends React.Component<{}, CreateServiceState> {
       return;
     }
 
+    const srcSelector = sourceObject.spec.selector;
+    if ('matchExpressions' in srcSelector) {
+      this.setState({
+        error: 'MatchExpressions is not supported as selector in the service',
+      });
+      return;
+    }
+
+    let selector = null;
+    if ('matchLabels' in srcSelector) {
+      selector = srcSelector.matchLabels;
+    } else {
+      selector = srcSelector;
+    }
     const service: K8sResourceKind = {
       apiVersion: 'v1',
       kind: 'Service',
       metadata: { name, namespace },
       spec: {
         type,
-        selector: sourceObject.spec.selector,
+        selector,
         ports: _.map(ports, (p) => {
           const result: ServicePortNoKey = {
             protocol: p.protocol,
